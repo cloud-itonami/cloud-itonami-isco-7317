@@ -1,5 +1,5 @@
 (ns woodbasketry.governor-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [kotoba.test :refer [deftest is testing]]
             [woodbasketry.store :as store]
             [woodbasketry.advisor :as advisor]
             [woodbasketry.governor :as governor]))
