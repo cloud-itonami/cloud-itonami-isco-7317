@@ -1,0 +1,42 @@
+;; What this vertical's robot physically does, declared for
+;; kotoba.robotics.process (kotoba-lang/robotics). `kbb -M:physics` runs it.
+;;
+;; README "Robotics premise": a workshop scheduling/logistics coordination
+;; robot handles crew scheduling, materials-usage records and wood/basketry-
+;; materials supply orders for a handicraft workshop (ISCO 7317). Its physical
+;; work: hauling timber and willow bundles to the benches, draining the willow
+;; soaking trough, and the steam box that softens wood for bending.
+;;
+;; Every number without a cited source is marked `estimate` in its :basis.
+;; Replacing an estimate with a sourced value is this bot's growth work.
+{:physics/schema "itonami.physical-ai.spec.v1"
+ :repo "cloud-itonami/cloud-itonami-isco-7317"
+ :cases
+ [{:id :timber-to-bench
+   :kind :transport
+   :procedure "cart hauls green timber and willow bundles from the yard store to the workbenches"
+   :params {:mass-kg 60.0 :distance-m 30.0 :v-max-mps 1.0 :a-max-mps2 0.5
+            :brake-decel-mps2 0.8 :drive-force-n 160.0 :crr 0.03
+            :cog-height-m 0.45 :support-half-length-m 0.35 :max-time-s 1200.0}
+   :sweep {:param :payload-kg :values [20.0 60.0 120.0 200.0 300.0]}
+   :quantity :cycle-time-s
+   :limit {:max 45.0 :basis "estimate: one yard-to-bench leg; crr 0.03 assumes a rough yard floor"}
+   :boundary {:lo 10.0 :hi 1000.0}}
+  {:id :willow-trough-drain
+   :kind :tank-drain
+   :procedure "willow soaking trough drains through its outlet before the water is changed"
+   :params {:tank-area-m2 1.2 :h0-m 0.50 :h-target-m 0.03 :cd 0.62 :q-in-m3s 0.0}
+   :sweep {:param :orifice-area-m2 :values [0.0003 0.0005 0.0010 0.0020 0.0030]}
+   :quantity :time-to-target-s
+   :limit {:max 900.0 :basis "estimate: water change inside a 15-minute slot before the next soak"}
+   :boundary {:lo 0.0001 :hi 0.005}}
+  {:id :steam-box-bending-stock
+   :kind :thermal
+   :procedure "oak bending stock in the 100 C steam box until its core (insulated symmetry plane, steamed both faces) reaches 95 C"
+   :params {:thickness-m 0.0125 :conductivity-w-mk 0.20 :density-kg-m3 750.0 :specific-heat-j-kgk 2000.0
+            :t0-c 20.0 :t-hot-c 100.0 :h-front-w-m2k 100.0 :h-back-w-m2k 0.0 :t-back-ambient-c 100.0
+            :threshold-c 95.0 :duration-s 14400.0 :nodes 11}
+   :sweep {:param :thickness-m :values [0.005 0.008 0.0125 0.019 0.025]}
+   :quantity :time-to-threshold-s
+   :limit {:max 3600.0 :basis "estimate: the steam box's one-hour cycle (the woodworkers' 'one hour per inch' rule of thumb, not a standard); h = 100 W/m2K for condensing steam is also an estimate"}
+   :boundary {:lo 0.003 :hi 0.04}}]}
